@@ -9,6 +9,10 @@ class Wallet {
         this.publicKey = this.keyPair.getPublic().encode("hex");
     }
 
+    sign(dataHash) {
+        return this.keyPair.sign(dataHash);
+    }
+
     toString() {
         return `Wallet -
         publicKey: ${this.publicKey.toString()}
