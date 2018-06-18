@@ -1,0 +1,18 @@
+{
+  "name": "blockchainjs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node app",
+    "dev-test": "nodemon dev-test"
+  },
+  "dependencies": {},
+  "main": "app.js",
+  "devDependencies": {
+    "nodemon": "^1.17.5"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
