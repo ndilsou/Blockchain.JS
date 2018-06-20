@@ -44,6 +44,7 @@ describe("Transaction", () => {
          expect(transaction).toEqual(undefined);
       });
    });
+
    describe("and updating a transaction", () => {
        let nextAmount, nextRecipient;
 
@@ -61,6 +62,7 @@ describe("Transaction", () => {
        it("outputs an amount for the next recipient", () => {
            expect(transaction.outputs.find(output => output.address === nextRecipient).amount).toEqual(nextAmount);
        })
+
    });
 
     describe('creating a reward transaction', () => {
@@ -73,4 +75,77 @@ describe("Transaction", () => {
         });
 
     });
+
+    describe("transaction with a fee", () => {
+        let fee;
+
+        beforeEach(() => {
+          fee = 10;
+          transaction = Transaction.newTransaction(wallet, recipient, amount, fee);
+        });
+
+        it("contains the fee in the recipient amount.", () => {
+           expect(transaction.outputs.find(output => output.address === recipient).fee).toEqual(fee);
+        });
+
+        it("outputs the `fee` and `amount` substracted from the wallet balance", () => {
+           expect(transaction.outputs.find(output => output.address === wallet.publicKey).amount)
+               .toEqual(wallet.balance - amount - fee);
+        });
+
+        describe("transaction with a negative fee", () => {
+           beforeEach(() => {
+              fee = -10;
+              transaction = Transaction.newTransaction(wallet, recipient, amount, fee);
+           });
+
+           it("rejects negative fees", () => {
+              expect(transaction).toBeUndefined()
+           });
+        });
+
+        describe("transacting with a fee that exceeds the balance", () => {
+            beforeEach(() => {
+                fee = 9999;
+                transaction = Transaction.newTransaction(wallet, recipient, amount, fee);
+            });
+
+            it('should reject excessive fees', () => {
+                expect(transaction).toBeUndefined();
+            });
+        });
+
+        describe("transacting with a null fee", () => {
+            beforeEach(() => {
+                fee = null;
+                transaction = Transaction.newTransaction(wallet, recipient, amount, fee);
+            });
+
+            it('should reject null fees', () => {
+                expect(transaction).toBeUndefined();
+            });
+        });
+
+        describe('creating collecting the transaction fee', () => {
+            let transactions, countT, collectorTransaction;
+
+            beforeEach(() => {
+                countT = 5;
+                transactions = []
+                for (let i=0; i<countT; ++i) {
+                    transactions.push(Transaction.newTransaction(wallet, `r3c1p13nt${i}`, amount, fee));
+                }
+                collectorTransaction = Transaction.collectTransactionFees(transactions,
+                    wallet.publicKey, Wallet.blockchainWallet());
+            });
+
+            it('should countain the total fee as amount', () => {
+                expect(collectorTransaction.outputs.find(output => output.address === wallet.publicKey).amount)
+                    .toEqual(fee * countT);
+
+            });
+        });
+    });
+
+
 });

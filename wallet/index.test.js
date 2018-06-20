@@ -13,17 +13,18 @@ describe("Wallet", () => {
    });
 
    describe("creating a transaction", () => {
-      let transaction, sendAmount, recipient;
+      let transaction, sendAmount, fee, recipient;
 
       beforeEach(() => {
           sendAmount = 50;
+          fee = 0;
           recipient = "r4nd0m-4ddr355";
-          transaction = wallet.createTransaction(recipient, sendAmount, bc, tp);
+          transaction = wallet.createTransaction(recipient, sendAmount, fee, bc, tp);
       })
 
        describe("and doing the same transaction", () => {
            beforeEach(() => {
-               wallet.createTransaction(recipient, sendAmount, bc, tp);
+               wallet.createTransaction(recipient, sendAmount, fee, bc, tp);
            });
 
            it("doubles the `sendAmount` substracted from the wallet balance", () => {
@@ -39,15 +40,16 @@ describe("Wallet", () => {
    });
 
     describe('calculating a balance', () => {
-        let addBalance, repeatAdd, senderWallet;
+        let addBalance, repeatAdd, fee, senderWallet;
 
         beforeEach(() => {
            senderWallet = new Wallet();
            addBalance = 100;
            repeatAdd = 3;
+           fee = 0;
 
            for (let i=0; i<repeatAdd; i++) {
-               senderWallet.createTransaction(wallet.publicKey, addBalance, bc, tp);
+               senderWallet.createTransaction(wallet.publicKey, addBalance,  fee, bc, tp);
            }
            bc.addBlock(tp.transactions);
         });
@@ -67,14 +69,14 @@ describe("Wallet", () => {
                tp.clear();
                subtractBalance = 60;
                recipientBalance = wallet.calculateBalance(bc);
-               wallet.createTransaction(senderWallet.publicKey, subtractBalance, bc, tp);
+               wallet.createTransaction(senderWallet.publicKey, subtractBalance, fee, bc, tp);
                bc.addBlock(tp.transactions);
             });
 
             describe('and the sender sends another transaction to the recipient', () => {
                 beforeEach(() => {
                     tp.clear();
-                    senderWallet.createTransaction(wallet.publicKey, addBalance, bc, tp);
+                    senderWallet.createTransaction(wallet.publicKey, addBalance, fee, bc, tp);
                     bc.addBlock(tp.transactions);
                 });
 

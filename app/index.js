@@ -34,8 +34,8 @@ app.get("/transactions", (req, res) => {
 });
 
 app.post("/transact", (req, res) => {
-    const { recipient, amount } = req.body;
-    const transaction = wallet.createTransaction(recipient, amount, bc, tp);
+    const { recipient, amount, fee } = req.body;
+    const transaction = wallet.createTransaction(recipient, amount, fee, bc, tp);
     p2pServer.broadcastTransaction(transaction);
     res.redirect("/transactions");
 });
@@ -44,21 +44,17 @@ app.get("/public-key", (req, res) => {
     res.json({ publicKey: wallet.publicKey });
 });
 
-app.get("/mine-transactions", (req, res) => {
-    const block = miner.mine();
+app.post("/mine-transactions", (req, res) => {
+    const { feeCollector } = req.body
+    const block = miner.mine(feeCollector);
     console.log(`New block added: ${block.toString()}`);
     res.redirect("/blocks");
 });
 
 app.get("/balance", (req, res) => {
-    const public_key = req.headers["public-key"];
+    res.json({ publicKey: wallet.publicKey, "balance": wallet.calculateBalance(bc) });
 
-    if (public_key === wallet.publicKey) {
-        res.json({ privateKey: wallet.publicKey, "balance": wallet.balance });
-    } else {
-        res.status(401);
-        res.send({error: "unauthorized access to resource"})
-    }
+    console.log(wallet.toString());
 });
 
 

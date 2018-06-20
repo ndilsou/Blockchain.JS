@@ -7,20 +7,29 @@ class Transaction {
         this.input = null;
         this.outputs = [];
     }
+    static validateInputs(balance, amount, fee) {
+        if (fee === null) return false;
+        if (fee < 0) return false;
 
-    update(senderWallet, recipient, amount) {
-        const senderOutput = this.outputs.find(output => output.address === senderWallet.publicKey);
-
-        if (amount > senderOutput.amount) {
-            console.log(`Amount: ${amount} exceeds balance.`);
-            return;
+        if (amount + fee > balance) {
+            console.log(`Amount: ${amount} plus Fee: ${fee} exceeds balance.`);
+            return false;
         }
 
-        senderOutput.amount = senderOutput.amount - amount;
-        this.outputs.push({ amount, address: recipient });
+        return true;
+    }
+
+    update(senderWallet, recipient, amount, fee=0) {
+        const senderOutput = this.outputs.find(output => output.address === senderWallet.publicKey);
+
+        if (!Transaction.validateInputs(senderOutput.amount, amount, fee)) return;
+
+        senderOutput.amount = senderOutput.amount - amount - fee;
+        this.outputs.push({ amount, fee, address: recipient });
         Transaction.signTransaction(this, senderWallet);
         return this;
     }
+
     static transactionWithOutputs(senderWallet, outputs) {
         const transaction = new this();
         transaction.outputs.push(...outputs);
@@ -28,15 +37,13 @@ class Transaction {
         return transaction;
     }
 
-    static newTransaction(senderWallet, recipient, amount) {
-        if (amount > senderWallet.balance) {
-            console.log(`Amount: ${amount} exceeds balance.`);
-            return;
-        }
+    static newTransaction(senderWallet, recipient, amount, fee=0) {
+
+        if (!Transaction.validateInputs(senderWallet.balance, amount, fee)) return;
 
         return Transaction.transactionWithOutputs(senderWallet, [
-            { amount: senderWallet.balance - amount, address: senderWallet.publicKey },
-            { amount, address: recipient }
+            { amount: senderWallet.balance - amount - fee, address: senderWallet.publicKey },
+            { amount, fee, address: recipient }
         ]);
     }
 
@@ -62,6 +69,24 @@ class Transaction {
             transaction.input.signature,
             ChainUtil.hash(transaction.outputs)
         );
+    }
+
+    static collectTransactionFees(transactions, collectorAddress, blockchainWallet) {
+        const fees = transactions.reduce((total, transaction) => {
+            const fees = transaction.outputs.reduce((total, output) => {
+                if (output.fee !== undefined) {
+                    total += output.fee;
+                }
+                return total;
+            }, 0);
+
+            return total + fees;
+        }, 0);
+
+        return Transaction.transactionWithOutputs(blockchainWallet, [{
+            amount: fees,
+            address: collectorAddress
+        }]);
     }
 }
 

@@ -10,7 +10,7 @@ describe("TransactionPool", () => {
        tp = new TransactionPool();
        bc = new Blockchain();
        wallet = new Wallet();
-       transaction = wallet.createTransaction("r4nd-4dr355", 30, bc, tp);
+       transaction = wallet.createTransaction("r4nd-4dr355", 30, 0, bc, tp);
     });
 
     it("adds a transaction to the pool", () => {
@@ -37,7 +37,7 @@ describe("TransactionPool", () => {
           validTransactions = [...tp.transactions];
           for (let i=0; i<6; ++i) {
               wallet = new Wallet();
-              transaction = wallet.createTransaction("r4nd-4dr355", 30, bc, tp);
+              transaction = wallet.createTransaction("r4nd-4dr355", 30, 0, bc, tp);
               if (i%2==0) {
                   transaction.input.amount = 99999;
               } else {
@@ -53,5 +53,26 @@ describe("TransactionPool", () => {
        it("grabs valid transaction", () => {
           expect(JSON.stringify(tp.validTransactions())).toEqual(JSON.stringify(validTransactions));
        });
+
+    });
+
+    describe('adding fees to transactions', () => {
+        let countT, fee, amount, transactions;
+
+        beforeEach(() => {
+            tp = new TransactionPool();
+            fee = 10;
+            amount = 10;
+            countT = 5;
+            transactions =[]
+            for (let i=0; i<countT; ++i) {
+                wallet = new Wallet();
+                transactions.push(wallet.createTransaction("r4nd-4dr355", amount, fee, bc, tp));
+            }
+        });
+
+        it('should validates all the transactions', () => {
+            expect(tp.validTransactions()).toEqual(transactions);
+        });
     });
 });
