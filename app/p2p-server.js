@@ -5,8 +5,9 @@ const peers = process.env.PEERS ? process.env.PEERS.split(",") : [];
 const MESSAGE_TYPES = {
     chain: 'CHAIN',
     transaction: 'TRANSACTION',
-    clear_transactions: 'CLEAR_TRANSACTIONS'
-}
+    clear_transactions: 'CLEAR_TRANSACTIONS',
+    list_peers: "LIST_PEERS"
+};
 
 
 class P2pServer {
@@ -14,11 +15,12 @@ class P2pServer {
         this.blockchain = blockchain;
         this.transactionPool = transactionPool;
         this.sockets = [];
+        this.server = null
     }
 
     listen() {
-        const server = new WebSocket.Server({ port: P2P_PORT });
-        server.on("connection", socket => this.connectSocket(socket));
+        this.server = new WebSocket.Server({ port: P2P_PORT });
+        this.server.on("connection", socket => this.connectSocket(socket));
 
         this.connectToPeers();
 
@@ -58,6 +60,7 @@ class P2pServer {
                case MESSAGE_TYPES.clear_transactions:
                    this.transactionPool.clear();
                    break;
+
            }
 
         });
@@ -103,7 +106,7 @@ class P2pServer {
     }
 
     static send(socket, message) {
-        if (socket.readyState === WebSocket.OPEN) {
+        if (socket !== this.server && socket.readyState === WebSocket.OPEN) {
             socket.send(message, P2pServer.errorHandler);
         }
     }
