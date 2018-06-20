@@ -50,6 +50,16 @@ app.get("/mine-transactions", (req, res) => {
     res.redirect("/blocks");
 });
 
+app.get("/balance", (req, res) => {
+    const public_key = req.headers["public-key"];
+    if (public_key === wallet.publicKey) {
+        res.json({ "public-key": wallet.publicKey, "balance": wallet.balance });
+    } else {
+        res.status(401);
+        res.send({error: "unauthorized access to resource"})
+    }
+});
+
 
 app.listen(HTTP_PORT, () => console.log(`Listening on port ${HTTP_PORT}`));
 p2pServer.listen();
