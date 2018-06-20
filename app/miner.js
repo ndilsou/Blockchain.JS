@@ -9,9 +9,17 @@ class Miner {
         this.p2pServer = p2pServer;
     }
 
-    mine() {
+    mine(collectorAddress) {
+        collectorAddress = collectorAddress || this.wallet.publicKey;
+
         const validTransactions = this.transactionPool.validTransactions();
+        validTransactions.push(Transaction.collectTransactionFees(
+            validTransactions,
+            collectorAddress,
+            Wallet.blockchainWallet()
+        ));
         validTransactions.push(Transaction.rewardTransaction(this.wallet, Wallet.blockchainWallet()));
+
         const block = this.blockchain.addBlock(validTransactions);
         this.p2pServer.syncChains();
         this.transactionPool.clear();

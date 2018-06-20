@@ -17,14 +17,17 @@ class TransactionPool {
     }
 
     existingTransaction(address) {
-        // TODO: How does this support multiple transaction from a given user?
         return this.transactions.find(t => t.input.address === address);
     }
 
     validTransactions() {
         return this.transactions.filter(transaction => {
             const outputTotal = transaction.outputs.reduce((total, output) => {
-               return total + output.amount;
+                let fee = output.fee;
+                if (fee === undefined) {
+                    fee = 0;
+                }
+               return total + output.amount + fee;
             }, 0);
 
             if (transaction.input.amount !== outputTotal) {

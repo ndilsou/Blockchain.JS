@@ -20,7 +20,7 @@ class Wallet {
         balance  : ${this.balance}`;
     }
 
-    createTransaction(recipient, amount, blockchain, transactionPool) {
+    createTransaction(recipient, amount, fee, blockchain, transactionPool) {
         this.balance = this.calculateBalance(blockchain);
 
         if (amount > this.balance) {
@@ -31,9 +31,9 @@ class Wallet {
         let transaction = transactionPool.existingTransaction(this.publicKey);
 
         if (transaction) {
-            transaction.update(this, recipient, amount)
+            transaction.update(this, recipient, amount, fee)
         } else {
-            transaction = Transaction.newTransaction(this, recipient, amount);
+            transaction = Transaction.newTransaction(this, recipient, amount, fee);
             transactionPool.updateOrAddTransaction(transaction);
         }
 
@@ -75,6 +75,7 @@ class Wallet {
     }
 
     static blockchainWallet() {
+
         const blockchainWallet = new this();
         blockchainWallet.address = "blockchain-wallet";
         return blockchainWallet;
