@@ -41,7 +41,7 @@ app.post("/transact", (req, res) => {
 });
 
 app.get("/public-key", (req, res) => {
-    res.json({publicKey: wallet.publicKey });
+    res.json({ publicKey: wallet.publicKey });
 });
 
 app.get("/mine-transactions", (req, res) => {
@@ -52,8 +52,9 @@ app.get("/mine-transactions", (req, res) => {
 
 app.get("/balance", (req, res) => {
     const public_key = req.headers["public-key"];
+
     if (public_key === wallet.publicKey) {
-        res.json({ "public-key": wallet.publicKey, "balance": wallet.balance });
+        res.json({ privateKey: wallet.publicKey, "balance": wallet.balance });
     } else {
         res.status(401);
         res.send({error: "unauthorized access to resource"})

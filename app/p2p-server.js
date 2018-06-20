@@ -1,4 +1,4 @@
-const Websocket = require("ws");
+const WebSocket = require("ws");
 
 const P2P_PORT = process.env.P2P_PORT || 5001;
 const peers = process.env.PEERS ? process.env.PEERS.split(",") : [];
@@ -8,6 +8,7 @@ const MESSAGE_TYPES = {
     clear_transactions: 'CLEAR_TRANSACTIONS'
 }
 
+
 class P2pServer {
     constructor(blockchain, transactionPool) {
         this.blockchain = blockchain;
@@ -16,7 +17,7 @@ class P2pServer {
     }
 
     listen() {
-        const server = new Websocket.Server({ port: P2P_PORT });
+        const server = new WebSocket.Server({ port: P2P_PORT });
         server.on("connection", socket => this.connectSocket(socket));
 
         this.connectToPeers();
@@ -26,7 +27,7 @@ class P2pServer {
 
     connectToPeers() {
         peers.forEach(peer => {
-            const socket = new Websocket(peer);
+            const socket = new WebSocket(peer);
 
             socket.on("open", () => this.connectSocket((socket)));
         });
@@ -62,21 +63,23 @@ class P2pServer {
         });
     }
 
+
+
     sendTransaction(socket, transaction) {
-        socket.send(JSON.stringify({
-            type: MESSAGE_TYPES.transaction,
-            transaction
+        P2pServer.send(socket, JSON.stringify({
+                type: MESSAGE_TYPES.transaction,
+                transaction
         }));
     }
 
     sendChain(socket) {
-        /* TODO: implement heartbeat check ->
-         https://github.com/websockets/ws#how-to-detect-and-close-broken-connections */
-        // TODO: Add error handling if send fails.
-        socket.send(JSON.stringify({
+        /* TODO: implement heartbeat check ->*/
+        P2pServer.send(socket, JSON.stringify({
             type: MESSAGE_TYPES.chain,
             chain: this.blockchain.chain
         }));
+
+
     }
 
     syncChains() {
@@ -88,7 +91,21 @@ class P2pServer {
     }
 
     broadcastClearTransactions() {
-        this.sockets.forEach(socket => socket.send(JSON.stringify({type: MESSAGE_TYPES.clear_transactions})));
+        this.sockets.forEach(socket => {
+            P2pServer.send(socket, JSON.stringify({type: MESSAGE_TYPES.clear_transactions}));
+        });
+    }
+
+    static errorHandler(error) {
+        if (error !== undefined) {
+            console.log(error);
+        }
+    }
+
+    static send(socket, message) {
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send(message, P2pServer.errorHandler);
+        }
     }
 }
 
