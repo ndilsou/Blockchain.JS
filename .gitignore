@@ -132,3 +132,4 @@ modules.xml
 # End of https://www.gitignore.io/api/node,pycharm+all
 
 notes.txt
+.vagrant
