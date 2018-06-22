@@ -1,3 +1,5 @@
+'use strict';
+
 const Blockchain = require("./index");
 const Block = require("./block");
 

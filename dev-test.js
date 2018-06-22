@@ -1,3 +1,5 @@
+'use strict';
+
 const Wallet = require("./wallet")
 
 const wallet = new Wallet();

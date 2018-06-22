@@ -1,3 +1,5 @@
+'use strict';
+
 const ChainUtil = require("../chain-util");
 const Transaction = require("./transaction");
 
