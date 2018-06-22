@@ -6,7 +6,7 @@ const Wallet = require("../wallet");
 const TransactionPool  = require("../wallet/transaction-pool");
 const Miner = require("./miner");
 
-const HTTP_PORT = process.env.HTTP_PORT || 3001;
+const { HTTP_PORT, P2P_PORT, PEERS } = require("../config");
 
 const app = express();
 
@@ -59,4 +59,4 @@ app.get("/balance", (req, res) => {
 
 
 app.listen(HTTP_PORT, () => console.log(`Listening on port ${HTTP_PORT}`));
-p2pServer.listen();
+p2pServer.listen(P2P_PORT, PEERS);
