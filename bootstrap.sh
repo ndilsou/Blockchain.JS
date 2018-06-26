@@ -1,5 +1,5 @@
 apt-get -qqy update
-apt-get -qqy install apt-transport-https ca-certificates curl software-properties-common
+apt-get -qqy install apt-transport-https ca-certificates curl software-properties-common nodejs npm
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
@@ -10,3 +10,4 @@ sudo add-apt-repository \
 
 apt-get -qqy update
 apt-get -qqy install docker-ce
+
